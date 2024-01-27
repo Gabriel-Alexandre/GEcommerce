@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
+// import firebase from 'firebase/app';
+// import 'firebase/auth';
+import { useCreateUserWithEmailAndPassword } from 'react-firebase-hooks/auth';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
+// import Button from '@mui/material/Button';
+// import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -23,68 +25,83 @@ import Iconify from 'src/components/iconify';
 
 import { auth } from '../../services/firebaseConfig';
 
-// ----------------------------------------------------------------------
-
-export default function LoginView() {
+export default function RegisterView() {
   const theme = useTheme();
-
   const router = useRouter();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [emailError, setEmailError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [
-    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
     user,
     loading,
     error,
-  ] = useSignInWithEmailAndPassword(auth);
-
+  ] = useCreateUserWithEmailAndPassword(auth);
 
   const handleEmailChange = (event) => {
     const { value } = event.target;
-    // Validação simples do formato do email
     const isValidEmail = /\S+@\S+\.\S+/.test(value);
     setEmail(value);
     setEmailError(!isValidEmail);
   };
 
+  const isStrongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(password);
+
   const handlePasswordChange = (event) => {
     const { value } = event.target;
     setPassword(value);
+    setPasswordError(!isStrongPassword || (confirmPassword !== value));
   };
 
-  const handleLogin = async () => {
+  const handleConfirmPasswordChange = (event) => {
+    const { value } = event.target;
+    setConfirmPassword(value);
+    setPasswordError(!isStrongPassword || (password !== value));
+  };
+
+  const handleRegister = async (e) => {
     try {
-      const userCredentials = await signInWithEmailAndPassword(email, password);
-      // console.log(userCredentials);
-      if(userCredentials) {
-        router.push('/dashboard');
-        console.log(user);
-        console.log('Autenticação bem-sucedida');
+      e.preventDefault();
+
+      if (!isStrongPassword || password !== confirmPassword) {
+        setPasswordError(true);
+        return;
       }
-    } catch (errorSignIn) {
-      console.error('Erro na autenticação:', error.message);
+
+      if(await createUserWithEmailAndPassword(email, password)) {
+        console.log(user);
+        console.log('Registro bem-sucedido');
+        router.push('/'); 
+      }
+
+    } catch (errorRegister) {
+      console.error('Erro no registro:', error.message);
     }
   };
 
   const renderForm = (
     <>
-      <Stack spacing={3}>
+      <Stack spacing={3} marginBottom={5}>
+
         <TextField
-            name="email"
-            label="Email address"
-            error={emailError}
-            helperText={emailError ? 'Invalid email format' : ''}
-            value={email}
-            onChange={handleEmailChange}
-          />
+          name="email"
+          label="Email address"
+          error={emailError}
+          helperText={emailError ? 'Invalid email format' : ''}
+          value={email}
+          onChange={handleEmailChange}
+        />
 
         <TextField
           name="password"
           label="Password"
           type={showPassword ? 'text' : 'password'}
+          error={passwordError}
+          helperText={passwordError ? 'Password is weak or does not match' : ''}
           value={password}
           onChange={handlePasswordChange}
           InputProps={{
@@ -97,14 +114,16 @@ export default function LoginView() {
             ),
           }}
         />
-      </Stack>
 
-      <Stack 
-      direction="row" alignItems="center" justifyContent="flex-end" style={{cursor: 'pointer'}} sx={{ my: 3 }}
-      >
-        <Link variant="subtitle2" underline="hover" onClick={() => console.log('go to forgot password')}>
-          Forgot password?
-        </Link>
+        <TextField
+          name="confirmPassword"
+          label="Confirm Password"
+          type={showPassword ? 'text' : 'password'}
+          error={passwordError}
+          helperText={passwordError ? 'Password is weak or does not match' : ''}
+          value={confirmPassword}
+          onChange={handleConfirmPasswordChange}
+        />
       </Stack>
 
       <LoadingButton
@@ -113,10 +132,10 @@ export default function LoginView() {
         type="submit"
         variant="contained"
         color="inherit"
-        onClick={handleLogin}
+        onClick={handleRegister}
         loading={loading}
       >
-        Login
+        Register
       </LoadingButton>
     </>
   );
@@ -147,52 +166,14 @@ export default function LoginView() {
             maxWidth: 420,
           }}
         >
-          <Typography variant="h4">Sign in to GEcommerce</Typography>
+          <Typography variant="h4">Create an account on GEcommerce</Typography>
 
-          <Typography variant="body2" sx={{ mt: 2, mb: 5 }} > 
-            Don’t have an account?
-            <Link variant="subtitle2" sx={{ ml: 0.5 }} style={{cursor: 'pointer'}} onClick={() => router.push('/register')}>
-              Get started
+          <Typography variant="body2" sx={{ mt: 2, mb: 5 }}>
+            Already have an account?
+            <Link variant="subtitle2" sx={{ ml: 0.5 }} style={{ cursor: 'pointer' }} onClick={() => router.push('/')}>
+              Login
             </Link>
           </Typography>
-
-          <Stack direction="row" spacing={2}>
-            <Button
-              fullWidth
-              size="large"
-              color="inherit"
-              variant="outlined"
-              sx={{ borderColor: alpha(theme.palette.grey[500], 0.16) }}
-            >
-              <Iconify icon="eva:google-fill" color="#DF3E30" />
-            </Button>
-
-            {/* <Button
-              fullWidth
-              size="large"
-              color="inherit"
-              variant="outlined"
-              sx={{ borderColor: alpha(theme.palette.grey[500], 0.16) }}
-            >
-              <Iconify icon="eva:facebook-fill" color="#1877F2" />
-            </Button>
-
-            <Button
-              fullWidth
-              size="large"
-              color="inherit"
-              variant="outlined"
-              sx={{ borderColor: alpha(theme.palette.grey[500], 0.16) }}
-            >
-              <Iconify icon="eva:twitter-fill" color="#1C9CEA" />
-            </Button> */}
-          </Stack>
-
-          <Divider sx={{ my: 3 }}>
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              OR
-            </Typography>
-          </Divider>
 
           {renderForm}
         </Card>
