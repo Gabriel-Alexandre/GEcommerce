@@ -30,7 +30,7 @@ export default function LoginView() {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleClick = () => {
-    router.push('/dashboard');
+    router.push('/');
   };
 
   const renderForm = (
@@ -54,8 +54,10 @@ export default function LoginView() {
         />
       </Stack>
 
-      <Stack direction="row" alignItems="center" justifyContent="flex-end" sx={{ my: 3 }}>
-        <Link variant="subtitle2" underline="hover">
+      <Stack 
+      direction="row" alignItems="center" justifyContent="flex-end" style={{cursor: 'pointer'}} sx={{ my: 3 }}
+      >
+        <Link variant="subtitle2" underline="hover" onClick={() => console.log('go to forgot password')}>
           Forgot password?
         </Link>
       </Stack>
@@ -99,11 +101,11 @@ export default function LoginView() {
             maxWidth: 420,
           }}
         >
-          <Typography variant="h4">Sign in to Minimal</Typography>
+          <Typography variant="h4">Sign in to GEcommerce</Typography>
 
-          <Typography variant="body2" sx={{ mt: 2, mb: 5 }}>
+          <Typography variant="body2" sx={{ mt: 2, mb: 5 }} > 
             Don’t have an account?
-            <Link variant="subtitle2" sx={{ ml: 0.5 }}>
+            <Link variant="subtitle2" sx={{ ml: 0.5 }} style={{cursor: 'pointer'}} onClick={() => console.log('go to register')}>
               Get started
             </Link>
           </Typography>
